@@ -25,15 +25,17 @@ data_y = np.array(data_y)
 
 mse = calculate_mse(data_y, np.exp(np.dot(data_x, np.zeros(2))))
 
-w = gradient_descent(data_x, data_y, 0.01, 100000)
+w = gradient_descent(data_x, data_y, 0.01, 10000)
 
 plt.figure(figsize=(10, 6))
 plt.scatter(data_x[:, 0], data_x[:, 1], c=data_y, cmap='viridis')
 
 
-x_values = np.linspace(min(data_x[:, 0]), max(data_x[:, 0]), 100)
+x_values = np.linspace(int(min(data_x[:, 0]))-2, int(max(data_x[:, 0]))+2, 100)
 y_values = - (w[0] * x_values) / w[1]
-plt.plot(x_values, y_values, color='red')
+np.append(y_values,0)
+print(y_values)
+plt.plot(x_values, y_values[::-1], color='red')
 
 plt.xlabel('Feature 1')
 plt.ylabel('Feature 2')

@@ -1,31 +1,51 @@
 import numpy as np
-from sklearn import svm
 import matplotlib.pyplot as plt
+from sklearn import svm
+import math
 
-# Обучающая выборка
+# обучающая выборка с тремя признаками (третий - константа +1)
 data_x = [(5.3, 2.3), (5.7, 2.5), (4.0, 1.0), (5.6, 2.4), (4.5, 1.5), (5.4, 2.3), (4.8, 1.8), (4.5, 1.5), (5.1, 1.5), (6.1, 2.3), (5.1, 1.9), (4.0, 1.2), (5.2, 2.0), (3.9, 1.4), (4.2, 1.2), (4.7, 1.5), (4.8, 1.8), (3.6, 1.3), (4.6, 1.4), (4.5, 1.7), (3.0, 1.1), (4.3, 1.3), (4.5, 1.3), (5.5, 2.1), (3.5, 1.0), (5.6, 2.2), (4.2, 1.5), (5.8, 1.8), (5.5, 1.8), (5.7, 2.3), (6.4, 2.0), (5.0, 1.7), (6.7, 2.0), (4.0, 1.3), (4.4, 1.4), (4.5, 1.5), (5.6, 2.4), (5.8, 1.6), (4.6, 1.3), (4.1, 1.3), (5.1, 2.3), (5.2, 2.3), (5.6, 1.4), (5.1, 1.8), (4.9, 1.5), (6.7, 2.2), (4.4, 1.3), (3.9, 1.1), (6.3, 1.8), (6.0, 1.8), (4.5, 1.6), (6.6, 2.1), (4.1, 1.3), (4.5, 1.5), (6.1, 2.5), (4.1, 1.0), (4.4, 1.2), (5.4, 2.1), (5.0, 1.5), (5.0, 2.0), (4.9, 1.5), (5.9, 2.1), (4.3, 1.3), (4.0, 1.3), (4.9, 2.0), (4.9, 1.8), (4.0, 1.3), (5.5, 1.8), (3.7, 1.0), (6.9, 2.3), (5.7, 2.1), (5.3, 1.9), (4.4, 1.4), (5.6, 1.8), (3.3, 1.0), (4.8, 1.8), (6.0, 2.5), (5.9, 2.3), (4.9, 1.8), (3.3, 1.0), (3.9, 1.2), (5.6, 2.1), (5.8, 2.2), (3.8, 1.1), (3.5, 1.0), (4.5, 1.5), (5.1, 1.9), (4.7, 1.4), (5.1, 1.6), (5.1, 2.0), (4.8, 1.4), (5.0, 1.9), (5.1, 2.4), (4.6, 1.5), (6.1, 1.9), (4.7, 1.6), (4.7, 1.4), (4.7, 1.2), (4.2, 1.3), (4.2, 1.3)]
 data_y = [1, 1, -1, 1, -1, 1, 1, -1, 1, 1, 1, -1, 1, -1, -1, -1, -1, -1, -1, 1, -1, -1, -1, 1, -1, 1, -1, 1, 1, 1, 1, -1, 1, -1, -1, -1, 1, 1, -1, -1, 1, 1, 1, 1, -1, 1, -1, -1, 1, 1, -1, 1, -1, -1, 1, -1, -1, 1, 1, 1, -1, 1, -1, -1, 1, 1, -1, 1, -1, 1, 1, 1, -1, 1, -1, 1, 1, 1, 1, -1, -1, 1, 1, -1, -1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, -1, -1, -1, -1, -1]
 
-# Создание и обучение модели
-clf = svm.SVC(kernel='linear')
-clf.fit(data_x, data_y)
+x_train = [np.asarray(x) for x in data_x]
+y_train = np.array(data_y)
 
-# Подсчет числа и процента неверных классификаций
-predictions = clf.predict(data_x)
-incorrect = (predictions != data_y).sum()
-percentage = incorrect / len(data_y) * 100
-print(f'Число неверных классификаций: {incorrect}')
-print(f'Процент неверных классификаций: {percentage}%')
+clf = svm.SVC(kernel='linear')  # SVM с линейным ядром
+clf.fit(x_train, y_train)  # нахождение вектора w по обучающей выборке
 
-# Отображение обучающей выборки и разделяющей линии
-plt.scatter(*zip(*data_x), c=data_y, cmap='bwr')
-ax = plt.gca()
-xlim = ax.get_xlim()
-ylim = ax.get_ylim()
-xx = np.linspace(xlim[0], xlim[1], 30)
-yy = np.linspace(ylim[0], ylim[1], 30)
-YY, XX = np.meshgrid(yy, xx)
-xy = np.vstack([XX.ravel(), YY.ravel()]).T
-Z = clf.decision_function(xy).reshape(XX.shape)
-ax.contour(XX, YY, Z, colors='k', levels=[-1, 0, 1], alpha=0.5, linestyles=['--', '-', '--'])
+y_pr = clf.predict(x_train)  # проверка на обучающей выборке
+print(np.array(y_train) - np.array(y_pr))  # нули - без ошибок; иначе - ошибка
+
+v = clf.support_vectors_  # выделение опорных векторов
+print(f"vectors {v}")
+
+lin_clf = svm.LinearSVC()           # SVM для линейно разделимой выборки (используется для получения вектора w)
+lin_clf.fit(x_train, y_train)
+
+w = lin_clf.coef_[0]                # коэффициенты линейной модели
+b = lin_clf.intercept_[0]
+
+print(w, v, sep='\n')
+
+# формирование графиков для визуализации полученных результатов
+x_train = np.array(x_train)
+y_train = np.array(y_train)
+size_x = math.ceil(max(x_train[:, 0]) * 1.2)
+size_y = math.ceil(max(x_train[:, 1]) * 1.2)
+line_x = list(range(size_x))   # формирование графика разделяющей линии
+line_y = [-x*w[0]/w[1] - b/w[1] for x in line_x]
+
+x_0 = x_train[y_train == 1]  # формирование точек для 1-го
+x_1 = x_train[y_train == -1]  # и 2-го классов
+
+plt.scatter(x_0[:, 0], x_0[:, 1], color='red')
+plt.scatter(x_1[:, 0], x_1[:, 1], color='blue')
+plt.scatter(v[:, 0], v[:, 1], s=100, facecolors='none', edgecolors='black') #вывод опорных векторов
+plt.plot(line_x, line_y, color='green')
+
+plt.xlim([0, size_x-1])
+plt.ylim([0, size_y])
+plt.ylabel("длина")
+plt.xlabel("ширина")
+plt.grid(True)
 plt.show()
